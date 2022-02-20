@@ -1,3 +1,7 @@
+package operations
+
+import allPairs
+import model.DataColumn
 import org.apache.commons.math3.stat.inference.TestUtils
 
 object OutcomesAnalyzer {

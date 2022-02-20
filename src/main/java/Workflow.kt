@@ -1,3 +1,7 @@
+import io.FileOperations
+import operations.OutcomesAnalyzer
+import operations.OutcomesPlotter
+import operations.OutcomesProcessor
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -8,12 +12,10 @@ val chartsDestPath: Path = Paths.get("C:\\Users\\wojci\\source\\master-thesis\\m
 fun main() {
     val dataColumnsMap = OutcomesProcessor.convertJMHOutputToDataColumns(jmhOutcomesSrcPath)
     FileOperations.writeDataColumnsToCSV(csvOutcomesDestPath, dataColumnsMap)
-    val normalizedDataColumnsMap = dataColumnsMap
-        .map { it.key to OutcomesProcessor.normalizeDataColumns(it.value) }.toMap()
-    normalizedDataColumnsMap.forEach {
+    dataColumnsMap.forEach {
         val chart = OutcomesPlotter.createBoxChart(it.key, it.value)
         OutcomesPlotter.plotBoxChart(chart)
         OutcomesPlotter.saveBoxChart(chart, chartsDestPath.add(chart.title))
     }
-    normalizedDataColumnsMap.forEach { OutcomesAnalyzer.performOneWayAnova(it.value) }
+    dataColumnsMap.forEach { OutcomesAnalyzer.performOneWayAnova(it.value) }
 }

@@ -1,3 +1,6 @@
+package operations
+
+import model.DataColumn
 import org.knowm.xchart.BitmapEncoder
 import org.knowm.xchart.BoxChart
 import org.knowm.xchart.BoxChartBuilder

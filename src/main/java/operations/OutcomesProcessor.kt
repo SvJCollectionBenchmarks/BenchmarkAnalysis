@@ -1,10 +1,10 @@
+package operations
+
+import model.DataColumn
 import org.apache.commons.math3.stat.StatUtils
 import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
-import java.nio.file.StandardOpenOption
-import javax.xml.crypto.Data
 
 object OutcomesProcessor {
 
@@ -25,7 +25,7 @@ object OutcomesProcessor {
                     val until = if (headers.lastIndex == index) lines.size else headers[index + 1].first
                     val resultsList = lines.subList(headers[index].first + 1, until)
                         .map { it.substringAfterLast(':').substringBeforeLast('o') }
-                        .map { it.replace(",", ".").trim().toDouble() }
+                        .map { it.replace(",", ".").trim().toDouble().toInt().toDouble() }
                     DataColumn(headers[index].second, resultsList)
                 }
             }

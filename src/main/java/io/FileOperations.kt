@@ -1,3 +1,6 @@
+package io
+
+import model.DataColumn
 import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Path

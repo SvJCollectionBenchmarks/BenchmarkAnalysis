@@ -24,6 +24,11 @@
             <artifactId>xchart</artifactId>
             <version>3.8.1</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.lucarosellini.rJava</groupId>
+            <artifactId>JRI</artifactId>
+            <version>0.9-7</version>
+        </dependency>
     </dependencies>
     
 </project>
