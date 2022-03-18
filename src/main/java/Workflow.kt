@@ -1,5 +1,4 @@
 import io.FileOperations
-import operations.OutcomesAnalyzer
 import operations.OutcomesPlotter
 import operations.OutcomesProcessor
 import java.nio.file.Path
@@ -17,5 +16,4 @@ fun main() {
         OutcomesPlotter.plotBoxChart(chart)
         OutcomesPlotter.saveBoxChart(chart, chartsDestPath.add(chart.title))
     }
-    dataColumnsMap.forEach { OutcomesAnalyzer.performOneWayAnova(it.value) }
 }

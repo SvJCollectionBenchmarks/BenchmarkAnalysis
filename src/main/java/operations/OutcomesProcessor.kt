@@ -11,8 +11,9 @@ object OutcomesProcessor {
     fun convertJMHOutputToDataColumns(srcPath: Path): Map<String, List<DataColumn>> {
         return Files.list(srcPath).toList()
             .map { path ->
-                path.fileName.toString().substringBeforeLast('.') to Files.readAllLines(path.toAbsolutePath(), Charset.forName("UTF-8"))
+                val lines = path.toAbsolutePath().toFile().readLines().map { it.filter { it != 0.toChar() }}
                     .filter { line -> line.trim().startsWith("Iteration") || line.trim().startsWith("# Benchmark:") }
+                path.fileName.toString().substringBeforeLast('.') to lines
             }
             .associate { fileLinesPair ->
                 val (file, lines) = fileLinesPair
