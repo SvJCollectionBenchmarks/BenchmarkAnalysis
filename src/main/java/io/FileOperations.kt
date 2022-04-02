@@ -9,10 +9,10 @@ import java.nio.file.StandardOpenOption
 
 object FileOperations {
 
-    fun writeDataColumnsToCSV(destPath: Path, dataColumnsMap: Map<String, List<DataColumn>>, csvSeparator: String = "; ") {
+    fun writeDataColumnsToCSV(destPath: Path, dataColumnsMap: Map<String, List<DataColumn>>, measured: String, csvSeparator: String = "; ") {
         dataColumnsMap.forEach { fileToDataColumns ->
             val (file, dataColumns) = fileToDataColumns
-            writeToCSV(Paths.get(destPath.toString(), "$file.csv"), csvSeparator, dataColumns)
+            writeToCSV(Paths.get(destPath.toString(), "${file}_$measured.csv"), csvSeparator, dataColumns)
         }
     }
 

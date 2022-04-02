@@ -14,5 +14,10 @@ for (csv_file in csv_files) {
   }
   anova_model <- aov(values~group, data=anova_data)
   print(summary(anova_model))
-  print(TukeyHSD(anova_model, conf.level=.95))
+  tukey <- TukeyHSD(anova_model, conf.level=.95)
+  print(tukey)
+  # par(las=2)
+  # par(cex.axis=1.0)
+  # par(mar=c(5,15,5,5))
+  plot(tukey, las=2)
 }
