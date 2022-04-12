@@ -13,6 +13,8 @@ fun main() {
     val memoryDataColumnsMap = OutcomesProcessor.convertJMHMemoryOutputToDataColumns(jmhOutcomesSrcPath)
     FileOperations.writeDataColumnsToCSV(csvOutcomesDestPath, performanceDataColumnsMap, "performance")
     FileOperations.writeDataColumnsToCSV(csvOutcomesDestPath, memoryDataColumnsMap, "memory")
+    val normalizedPerformanceDataColumnsMap = performanceDataColumnsMap
+        .map { it.key to OutcomesProcessor.normalizeDataColumns(it.value) }.toMap()
     performanceDataColumnsMap.forEach {
          val chart = OutcomesPlotter.createBoxChart(it.key, it.value)
         OutcomesPlotter.plotBoxChart(chart)
