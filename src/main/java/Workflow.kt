@@ -1,6 +1,8 @@
 import io.FileOperations
 import operations.OutcomesPlotter
 import operations.OutcomesProcessor
+import operations.OutcomesTransformation
+import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -13,10 +15,10 @@ fun main() {
     val memoryDataColumnsMap = OutcomesProcessor.convertJMHMemoryOutputToDataColumns(jmhOutcomesSrcPath)
     FileOperations.writeDataColumnsToCSV(csvOutcomesDestPath, performanceDataColumnsMap, "performance")
     FileOperations.writeDataColumnsToCSV(csvOutcomesDestPath, memoryDataColumnsMap, "memory")
-    val normalizedPerformanceDataColumnsMap = performanceDataColumnsMap
-        .map { it.key to OutcomesProcessor.normalizeDataColumns(it.value) }.toMap()
+    val measurementTables = performanceDataColumnsMap.map { it.key to OutcomesTransformation.createMeasurementTable(it.value) }.toMap()
+    FileOperations.writeDataColumnsToCSV(csvOutcomesDestPath, measurementTables, "table")
     performanceDataColumnsMap.forEach {
-         val chart = OutcomesPlotter.createBoxChart(it.key, it.value)
+        val chart = OutcomesPlotter.createBoxChart(it.key, it.value)
         OutcomesPlotter.plotBoxChart(chart)
         OutcomesPlotter.saveBoxChart(chart, chartsDestPath.add(chart.title))
     }

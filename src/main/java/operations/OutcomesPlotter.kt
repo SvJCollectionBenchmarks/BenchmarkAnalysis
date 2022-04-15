@@ -14,7 +14,7 @@ object OutcomesPlotter {
         val chart = BoxChartBuilder().title(chartTitle).build()
         chart.styler.boxplotCalCulationMethod = BoxStyler.BoxplotCalCulationMethod.N_LESS_1_PLUS_1
         chart.styler.isToolTipsEnabled = true
-        dataColumns.forEach { dataColumn -> chart.addSeries(dataColumn.header, dataColumn.rows.map { it.toInt() / 100 }) }
+        dataColumns.forEach { dataColumn -> chart.addSeries(dataColumn.header, dataColumn.rows.map { it.toInt() }) }
         return chart
     }
 

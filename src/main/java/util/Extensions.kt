@@ -1,5 +1,8 @@
+import java.lang.Math.pow
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.math.pow
+import kotlin.math.roundToInt
 
 fun Path.add(fragment: String): Path {
     return Paths.get(this.toString(), fragment)
@@ -12,3 +15,5 @@ fun <T> List<T>.allPairs(): List<Pair<T, T>> {
         }
     }.flatten()
 }
+
+fun Double.roundToN(n: Int) = (this * 10.0.pow(n)).roundToInt() / 10.0.pow(n)
