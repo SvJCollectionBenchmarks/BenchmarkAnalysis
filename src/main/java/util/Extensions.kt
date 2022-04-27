@@ -1,4 +1,3 @@
-import java.lang.Math.pow
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.math.pow

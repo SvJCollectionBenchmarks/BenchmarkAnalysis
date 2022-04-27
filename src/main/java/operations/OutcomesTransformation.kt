@@ -22,28 +22,60 @@ object OutcomesTransformation {
         val maxs = DataColumn("Maks.", performanceData.map { (it.rows.maxOrNull())?.roundToN(2)!! })
         val confIntervals = performanceData.map { calculateConfidenceInterval(it.rows) }
         val confIntervalsCols = AnyDataColumn("Przedział ufności", confIntervals.map { "(${it.lowerBound.roundToN(2)}, ${it.upperBound.roundToN(2)})" })
+//        val confIntervalsLowerCols = AnyDataColumn("Przedział ufności", confIntervals.map { "${it.lowerBound.roundToN(2)}" })
+//        val confIntervalsUpperCols = AnyDataColumn("Przedział ufności", confIntervals.map { "${it.upperBound.roundToN(2)}" })
         return listOf(collections, means, sds, mins, maxs, confIntervalsCols)
+    }
+
+    fun createPolyaProfilesSummary(performanceData: Map<String, List<DataColumn>>): Map<String, List<AnyDataColumn>> {
+        val groupsOfCollections = performanceData.toList().groupBy { (group, data) ->
+            val bigLettersIndices = group.mapIndexed {idx, c -> idx to c }
+                .filter { pair -> ('A' .. 'Z').contains(pair.second) }.map { it.first }
+            group.substring(bigLettersIndices[1])
+        }.map { it.key to it.value.toMap() }.toMap()
+        val groupsOfCollectionsWithProfiles = groupsOfCollections.map { (groupOfCollections, dataForGroup) ->
+            groupOfCollections to dataForGroup.toList().map { (group, data) ->
+                val bigLettersIndices = group.mapIndexed {idx, c -> idx to c }
+                    .filter { pair: Pair<Int, Char> -> ('A' .. 'Z').contains(pair.second) }.map { it.first }
+                group.substring(0, bigLettersIndices[1]) to data }.toMap()
+        }.toMap()
+        return groupsOfCollectionsWithProfiles.map { (groupOfCollections, dataForGroup) ->
+            val collectionsColumn = AnyDataColumn("Kolekcja", dataForGroup.values.flatten().map { it.header }.distinct())
+            val profilesDataColumns = dataForGroup.map { (profileName, performanceData) ->
+                val confIntervals = performanceData.map { calculateConfidenceInterval(it.rows) }
+                AnyDataColumn(profileName, confIntervals.map { "(${it.lowerBound.toInt()}, ${it.upperBound.toInt()})" })
+            }.toMutableList()
+            profilesDataColumns.add(0, collectionsColumn)
+            groupOfCollections to profilesDataColumns
+        }.toMap()
     }
 
     fun createSingleMeasurementTable(performanceData: Map<String, List<DataColumn>>): Map<String, List<AnyDataColumn>> {
         val groups = performanceData.map { entry ->
+            // TODO: Beyond stupid group name finding, please cut it in a different way
             val veryStupid = entry.key.mapIndexed { idx, c -> idx to c }.filter { it.second.isUpperCase() }
-            entry.key.substring(0, veryStupid[3].first) to (entry.key to entry.value)
+            val index = if (veryStupid.size <= 3) veryStupid[1].first else veryStupid[3].first
+            entry.key.substring(0, index) to (entry.key to entry.value)
         }.groupBy { it.first }.map {
             val collectionsData = it.value.map { it.second }.map {
+                // TODO: Beyond stupid group name finding, please cut it in a different way
                 val veryStupid = it.first.mapIndexed { idx, c -> idx to c }.filter { it.second.isUpperCase() }
-                it.first.substring(veryStupid[3].first) to it.second
+                val index = if (veryStupid.size <= 3) veryStupid[1].first else veryStupid[3].first
+                it.first.substring(index) to it.second
             }.toMap()
             it.key to collectionsData
         }.toMap()
         val groupsDataColumns = groups.map { (group, operationsData) ->
             val collectionsAvgs = operationsData.map { (operation, data) ->
-               operation to data.map { it.header to it.rows.average() }.toMap()
+               operation to data.map {
+                   val confInterval = calculateConfidenceInterval(it.rows)
+                   it.header to "(${confInterval.lowerBound.toInt()}, ${confInterval.upperBound.toInt()})"
+               }.toMap()
             }.toMap()
             val operations = AnyDataColumn("Operation", collectionsAvgs.keys.toList())
             val collections = collectionsAvgs.values.map { it.map { it.key } }.flatten().toSet()
             // TODO: THROW NULL POINTER WHEN it.value[collection] IS NULL!!!
-            val columns = collections.map { collection -> DataColumn(collection, collectionsAvgs.map { it.value[collection] ?: 0.0 }) }
+            val columns = collections.map { collection -> AnyDataColumn(collection, collectionsAvgs.map { it.value[collection] ?: "ERROR" }) }
             group to mutableListOf(operations).apply { this.addAll(columns) }
         }.toMap()
         return groupsDataColumns
