@@ -1,5 +1,5 @@
 package model
 
 enum class AnalysisPostfix {
-    POLYA, SINGLE, OWN
+    POLYA, SINGLE, OWN, TYPES
 }

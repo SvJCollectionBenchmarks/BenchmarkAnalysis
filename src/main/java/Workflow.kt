@@ -10,7 +10,7 @@ val jmhOutcomesSrcPath: Path = Paths.get("C:\\Users\\wojci\\source\\master-thesi
 val csvOutcomesDestPath: Path = Paths.get("C:\\Users\\wojci\\source\\master-thesis\\measurements\\csv")
 val chartsDestPath: Path = Paths.get("C:\\Users\\wojci\\source\\master-thesis\\measurements\\charts")
 
-val analysisPostfix = AnalysisPostfix.POLYA
+val analysisPostfix = AnalysisPostfix.SINGLE
 
 fun main() {
     try {
@@ -22,19 +22,24 @@ fun main() {
         OutcomesTransformation.createSingleMeasurementTable(performanceDataColumnsMap)
         FileOperations.writeDataColumnsToCSV(finalOutcomesDestPath, performanceDataColumnsMap, "performance")
         FileOperations.writeDataColumnsToCSV(finalOutcomesDestPath, memoryDataColumnsMap, "memory")
-
         when (analysisPostfix) {
+            AnalysisPostfix.TYPES -> {
+                val summaryTables = OutcomesTransformation.createPolyaProfilesSummary(performanceDataColumnsMap)
+                FileOperations.writeDataColumnsToCSV(finalOutcomesDestPath.add("summaryProfiles"), summaryTables, "summaryProfiles")
+            }
             AnalysisPostfix.SINGLE -> {
+                val allProfilesSummary = OutcomesTransformation.createSingleProfilesSummary(performanceDataColumnsMap)
+                FileOperations.writeDataColumnsToCSV(finalOutcomesDestPath.add("summaryProfiles"), allProfilesSummary, "summaryProfiles")
                 val allOperationsSummary = OutcomesTransformation.createSingleMeasurementTable(performanceDataColumnsMap)
-                FileOperations.writeDataColumnsToCSV(finalOutcomesDestPath, allOperationsSummary, "operationSummary")
+                FileOperations.writeDataColumnsToCSV(finalOutcomesDestPath.add("summaryOperations"), allOperationsSummary, "summaryOperation")
                 val measurementTables = performanceDataColumnsMap.map { it.key to OutcomesTransformation.createPolyaMeasurementTable(it.value) }.toMap()
-                FileOperations.writeDataColumnsToCSV(finalOutcomesDestPath, measurementTables, "table")
+                FileOperations.writeDataColumnsToCSV(finalOutcomesDestPath.add("summaryTables"), measurementTables, "summaryTable")
             }
             AnalysisPostfix.POLYA -> {
                 val summaryTables = OutcomesTransformation.createPolyaProfilesSummary(performanceDataColumnsMap)
-                FileOperations.writeDataColumnsToCSV(finalOutcomesDestPath, summaryTables, "profilesSummary")
+                FileOperations.writeDataColumnsToCSV(finalOutcomesDestPath.add("summaryProfiles"), summaryTables, "summaryProfiles")
                 val measurementTables = performanceDataColumnsMap.map { it.key to OutcomesTransformation.createPolyaMeasurementTable(it.value) }.toMap()
-                FileOperations.writeDataColumnsToCSV(finalOutcomesDestPath, measurementTables, "table")
+                FileOperations.writeDataColumnsToCSV(finalOutcomesDestPath.add("summaryTables"), measurementTables, "summaryTable")
             }
             AnalysisPostfix.OWN -> {}
         }

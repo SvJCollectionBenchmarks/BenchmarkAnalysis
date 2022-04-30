@@ -81,6 +81,30 @@ object OutcomesTransformation {
         return groupsDataColumns
     }
 
+    // TODO: I think currently this is working per operation, should it?
+    fun createSingleProfilesSummary(performanceData: Map<String, List<DataColumn>>): Map<String, List<AnyDataColumn>> {
+        val groupsOfCollections = performanceData.toList().groupBy { (group, data) ->
+            val bigLettersIndices = group.mapIndexed {idx, c -> idx to c }
+                .filter { pair -> ('A' .. 'Z').contains(pair.second) }.map { it.first }
+            group.substring(bigLettersIndices[1])
+        }.map { it.key to it.value.toMap() }.toMap()
+        val groupsOfCollectionsWithProfiles = groupsOfCollections.map { (groupOfCollections, dataForGroup) ->
+            groupOfCollections to dataForGroup.toList().map { (group, data) ->
+                val bigLettersIndices = group.mapIndexed {idx, c -> idx to c }
+                    .filter { pair: Pair<Int, Char> -> ('A' .. 'Z').contains(pair.second) }.map { it.first }
+                group.substring(0, bigLettersIndices[1]) to data }.toMap()
+        }.toMap()
+        return groupsOfCollectionsWithProfiles.map { (groupOfCollections, dataForGroup) ->
+            val collectionsColumn = AnyDataColumn("Kolekcja", dataForGroup.values.flatten().map { it.header }.distinct())
+            val profilesDataColumns = dataForGroup.map { (profileName, performanceData) ->
+                val confIntervals = performanceData.map { calculateConfidenceInterval(it.rows) }
+                AnyDataColumn(profileName, confIntervals.map { "(${it.lowerBound.toInt()}, ${it.upperBound.toInt()})" })
+            }.toMutableList()
+            profilesDataColumns.add(0, collectionsColumn)
+            groupOfCollections to profilesDataColumns
+        }.toMap()
+    }
+
     fun calculateConfidenceInterval(data: Collection<Double>, level: Double = 0.95): ConfidenceInterval {
         val stats = SummaryStatistics()
         data.forEach { stats.addValue(it) }
