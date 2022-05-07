@@ -19,12 +19,11 @@ fun main() {
         val finalChartsDestPath = chartsDestPath.add(analysisPostfix.toString().lowercase())
         val performanceDataColumnsMap = OutcomesProcessor.convertJMHPerformanceOutputToDataColumns(finalOutcomesSrcPath)
         val memoryDataColumnsMap = OutcomesProcessor.convertJMHMemoryOutputToDataColumns(finalOutcomesSrcPath)
-        OutcomesTransformation.createSingleMeasurementTable(performanceDataColumnsMap)
         FileOperations.writeDataColumnsToCSV(finalOutcomesDestPath, performanceDataColumnsMap, "performance")
         FileOperations.writeDataColumnsToCSV(finalOutcomesDestPath, memoryDataColumnsMap, "memory")
         when (analysisPostfix) {
             AnalysisPostfix.TYPES -> {
-                val summaryTables = OutcomesTransformation.createPolyaProfilesSummary(performanceDataColumnsMap)
+                val summaryTables = OutcomesTransformation.createPolyaProfilesSummaryAverages(performanceDataColumnsMap)
                 FileOperations.writeDataColumnsToCSV(finalOutcomesDestPath.add("summaryProfiles"), summaryTables, "summaryProfiles")
             }
             AnalysisPostfix.SINGLE -> {
@@ -36,7 +35,7 @@ fun main() {
                 FileOperations.writeDataColumnsToCSV(finalOutcomesDestPath.add("summaryTables"), measurementTables, "summaryTable")
             }
             AnalysisPostfix.POLYA -> {
-                val summaryTables = OutcomesTransformation.createPolyaProfilesSummary(performanceDataColumnsMap)
+                val summaryTables = OutcomesTransformation.createPolyaProfilesSummaryConfIntervals(performanceDataColumnsMap)
                 FileOperations.writeDataColumnsToCSV(finalOutcomesDestPath.add("summaryProfiles"), summaryTables, "summaryProfiles")
                 val measurementTables = performanceDataColumnsMap.map { it.key to OutcomesTransformation.createPolyaMeasurementTable(it.value) }.toMap()
                 FileOperations.writeDataColumnsToCSV(finalOutcomesDestPath.add("summaryTables"), measurementTables, "summaryTable")

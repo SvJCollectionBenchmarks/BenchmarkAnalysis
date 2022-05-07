@@ -27,7 +27,18 @@ object OutcomesTransformation {
         return listOf(collections, means, sds, mins, maxs, confIntervalsCols)
     }
 
-    fun createPolyaProfilesSummary(performanceData: Map<String, List<DataColumn>>): Map<String, List<AnyDataColumn>> {
+    fun createPolyaProfilesSummaryConfIntervals(performanceData: Map<String, List<DataColumn>>): Map<String, List<AnyDataColumn>> {
+        return createPolyaProfilesSummary(performanceData) { pd ->
+            pd.map { calculateConfidenceInterval(it.rows) }
+                .map { "(${it.lowerBound.toInt()}, ${it.upperBound.toInt()})" }
+        }
+    }
+
+    fun createPolyaProfilesSummaryAverages(performanceData: Map<String, List<DataColumn>>): Map<String, List<AnyDataColumn>> {
+        return createPolyaProfilesSummary(performanceData) { pd -> pd.map { "${it.rows.average().roundToN(1)}" } }
+    }
+
+    private fun createPolyaProfilesSummary(performanceData: Map<String, List<DataColumn>>, method: (List<DataColumn>) -> List<String>): Map<String, List<AnyDataColumn>> {
         val groupsOfCollections = performanceData.toList().groupBy { (group, data) ->
             val bigLettersIndices = group.mapIndexed {idx, c -> idx to c }
                 .filter { pair -> ('A' .. 'Z').contains(pair.second) }.map { it.first }
@@ -42,8 +53,7 @@ object OutcomesTransformation {
         return groupsOfCollectionsWithProfiles.map { (groupOfCollections, dataForGroup) ->
             val collectionsColumn = AnyDataColumn("Kolekcja", dataForGroup.values.flatten().map { it.header }.distinct())
             val profilesDataColumns = dataForGroup.map { (profileName, performanceData) ->
-                val confIntervals = performanceData.map { calculateConfidenceInterval(it.rows) }
-                AnyDataColumn(profileName, confIntervals.map { "(${it.lowerBound.toInt()}, ${it.upperBound.toInt()})" })
+                AnyDataColumn(profileName, method(performanceData))
             }.toMutableList()
             profilesDataColumns.add(0, collectionsColumn)
             groupOfCollections to profilesDataColumns
