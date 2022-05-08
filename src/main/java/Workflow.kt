@@ -10,7 +10,7 @@ val jmhOutcomesSrcPath: Path = Paths.get("C:\\Users\\wojci\\source\\master-thesi
 val csvOutcomesDestPath: Path = Paths.get("C:\\Users\\wojci\\source\\master-thesis\\measurements\\csv")
 val chartsDestPath: Path = Paths.get("C:\\Users\\wojci\\source\\master-thesis\\measurements\\charts")
 
-val analysisPostfix = AnalysisPostfix.SINGLE
+val analysisPostfix = AnalysisPostfix.OWN
 
 fun main() {
     try {
@@ -40,7 +40,10 @@ fun main() {
                 val measurementTables = performanceDataColumnsMap.map { it.key to OutcomesTransformation.createPolyaMeasurementTable(it.value) }.toMap()
                 FileOperations.writeDataColumnsToCSV(finalOutcomesDestPath.add("summaryTables"), measurementTables, "summaryTable")
             }
-            AnalysisPostfix.OWN -> {}
+            AnalysisPostfix.OWN -> {
+                val measurementTables = performanceDataColumnsMap.map { it.key to OutcomesTransformation.createPolyaMeasurementTable(it.value) }.toMap()
+                FileOperations.writeDataColumnsToCSV(finalOutcomesDestPath.add("summaryTables"), measurementTables, "summaryTable")
+            }
         }
         performanceDataColumnsMap.forEach {
 //            val profileEndIndex = it.key.substring(1).indexOfFirst { ('A'..'Z').contains(it)} + 1
