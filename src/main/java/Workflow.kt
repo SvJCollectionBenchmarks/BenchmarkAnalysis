@@ -10,7 +10,7 @@ val jmhOutcomesSrcPath: Path = Paths.get("C:\\Users\\wojci\\source\\master-thesi
 val csvOutcomesDestPath: Path = Paths.get("C:\\Users\\wojci\\source\\master-thesis\\measurements\\csv")
 val chartsDestPath: Path = Paths.get("C:\\Users\\wojci\\source\\master-thesis\\measurements\\charts")
 
-val analysisPostfix = AnalysisPostfix.OWN
+val analysisPostfix = AnalysisPostfix.SINGLE
 
 fun main() {
     try {
@@ -27,7 +27,9 @@ fun main() {
                 FileOperations.writeDataColumnsToCSV(finalOutcomesDestPath.add("summaryProfiles"), summaryTables, "summaryProfiles")
             }
             AnalysisPostfix.SINGLE -> {
-                val allProfilesSummary = OutcomesTransformation.createSingleProfilesSummary(performanceDataColumnsMap)
+                val profilesDifferences = OutcomesTransformation.createSingleProfilesSummaryDifferences(performanceDataColumnsMap)
+                FileOperations.writeDataColumnsToCSV(finalOutcomesDestPath.add("profilesDifferences"), profilesDifferences, "profilesDifferences")
+                val allProfilesSummary = OutcomesTransformation.createSingleProfilesSummaryConfIntervals(performanceDataColumnsMap)
                 FileOperations.writeDataColumnsToCSV(finalOutcomesDestPath.add("summaryProfiles"), allProfilesSummary, "summaryProfiles")
                 val allOperationsSummary = OutcomesTransformation.createSingleMeasurementTable(performanceDataColumnsMap)
                 FileOperations.writeDataColumnsToCSV(finalOutcomesDestPath.add("summaryOperations"), allOperationsSummary, "summaryOperation")

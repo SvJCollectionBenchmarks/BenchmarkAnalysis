@@ -6,6 +6,8 @@ import org.apache.commons.math3.distribution.TDistribution
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics
 import org.apache.commons.math3.stat.interval.ConfidenceInterval
 import roundToN
+import substringFromNthBig
+import substringUntilNthBig
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -36,6 +38,18 @@ object OutcomesTransformation {
 
     fun createPolyaProfilesSummaryAverages(performanceData: Map<String, List<DataColumn>>): Map<String, List<AnyDataColumn>> {
         return createPolyaProfilesSummary(performanceData) { pd -> pd.map { "${it.rows.average().roundToN(1)}" } }
+    }
+
+    fun createPolyaProfilesSummaryDifferences(performanceData: Map<String, List<DataColumn>>) {
+        val profilesSummaryAverages = createPolyaProfilesSummaryAverages(performanceData)
+        val outcome = profilesSummaryAverages.map { (group, dataColumns) ->
+            val collectionRows = (0 until dataColumns[0].rows.size).map { idx ->
+                val rowData = dataColumns.drop(1).map { "${it.rows[idx]}".toDouble() }
+                val difference = rowData.maxOrNull()!! - rowData.minOrNull()!!
+                dataColumns[0].rows[idx] to difference / rowData.sorted()[rowData.size / 2]
+            }
+            println(collectionRows)
+        }
     }
 
     private fun createPolyaProfilesSummary(performanceData: Map<String, List<DataColumn>>, method: (List<DataColumn>) -> List<String>): Map<String, List<AnyDataColumn>> {
@@ -91,8 +105,19 @@ object OutcomesTransformation {
         return groupsDataColumns
     }
 
+    fun createSingleProfilesSummaryConfIntervals(performanceData: Map<String, List<DataColumn>>): Map<String, List<AnyDataColumn>> {
+        return createPolyaProfilesSummary(performanceData) { pd ->
+            pd.map { calculateConfidenceInterval(it.rows) }
+                .map { "(${it.lowerBound.toInt()}, ${it.upperBound.toInt()})" }
+        }
+    }
+
+    fun createSingleProfilesSummaryAverages(performanceData: Map<String, List<DataColumn>>): Map<String, List<AnyDataColumn>> {
+        return createPolyaProfilesSummary(performanceData) { pd -> pd.map { "${it.rows.average().roundToN(1)}" } }
+    }
+
     // TODO: I think currently this is working per operation, should it?
-    fun createSingleProfilesSummary(performanceData: Map<String, List<DataColumn>>): Map<String, List<AnyDataColumn>> {
+    private fun createSingleProfilesSummary(performanceData: Map<String, List<DataColumn>>, method: (List<DataColumn>) -> List<String>): Map<String, List<AnyDataColumn>> {
         val groupsOfCollections = performanceData.toList().groupBy { (group, data) ->
             val bigLettersIndices = group.mapIndexed {idx, c -> idx to c }
                 .filter { pair -> ('A' .. 'Z').contains(pair.second) }.map { it.first }
@@ -107,12 +132,23 @@ object OutcomesTransformation {
         return groupsOfCollectionsWithProfiles.map { (groupOfCollections, dataForGroup) ->
             val collectionsColumn = AnyDataColumn("Kolekcja", dataForGroup.values.flatten().map { it.header }.distinct())
             val profilesDataColumns = dataForGroup.map { (profileName, performanceData) ->
-                val confIntervals = performanceData.map { calculateConfidenceInterval(it.rows) }
-                AnyDataColumn(profileName, confIntervals.map { "(${it.lowerBound.toInt()}, ${it.upperBound.toInt()})" })
+                AnyDataColumn(profileName, method(performanceData))
             }.toMutableList()
             profilesDataColumns.add(0, collectionsColumn)
             groupOfCollections to profilesDataColumns
         }.toMap()
+    }
+
+    fun createSingleProfilesSummaryDifferences(performanceData: Map<String, List<DataColumn>>): Map<String, List<AnyDataColumn>> {
+        val profilesSummaryAverages = createSingleProfilesSummaryAverages(performanceData)
+        val groupedDifferenceData = profilesSummaryAverages.map { (group, dataColumns) ->
+            group to (0 until dataColumns[0].rows.size).map { idx ->
+                val rowData = dataColumns.drop(1).map { "${it.rows[idx]}".toDouble() }
+                val difference = rowData.maxOrNull()!! - rowData.minOrNull()!!
+                dataColumns[0].rows[idx] to "${(difference / rowData.average() * 100.0).roundToN(1)} %"
+            }
+        }.groupBy { it.first.substringUntilNthBig(2) }.map { it.key to it.value.map { it.first.substringFromNthBig(2) to it.second} }
+        return groupedDifferenceData.associate { it.first to AnyDataColumn.convertRowsToDataColumns(it.second) }
     }
 
     fun calculateConfidenceInterval(data: Collection<Double>, level: Double = 0.95): ConfidenceInterval {

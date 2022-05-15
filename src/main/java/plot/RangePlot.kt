@@ -1,15 +1,16 @@
 package plot
 
-/* Weird and stupid demo */
+/* Weird and stupid demo that actually evolved into something halfway decent */
 
 import java.awt.Color
+import java.awt.Font
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 import kotlin.math.max
 
-fun rangePlot(width: Int, ranges: List<Pair<String, IntRange>>, contentPercent: Int = 80, padding: Int  = 40, partsLevel: Int = 3, barHeight: Int = 30): BufferedImage {
-    val height = ranges.size * barHeight + 2 * padding
+fun rangePlot(width: Int, ranges: List<Pair<String, IntRange>>, contentPercent: Int = 90, padding: Int = 40, partsLevel: Int = 3, barHeight: Int = 30): BufferedImage {
+    val height = (ranges.size + 1) * barHeight + padding
     val plot = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
     val g2d = plot.createGraphics()
 
@@ -42,7 +43,8 @@ fun rangePlot(width: Int, ranges: List<Pair<String, IntRange>>, contentPercent: 
         }.flatten().toMutableList()
     }
 
-    g2d.color = Color.black
+    val standardFont = g2d.font
+    val rangeValuesFont = standardFont.deriveFont(9f)
     ranges.forEachIndexed { idx, labeledRange ->
         val (label, range) = labeledRange
         val start = (width - 2 * padding) * (range.first - minValue) / wholeDistance + padding
@@ -50,7 +52,16 @@ fun rangePlot(width: Int, ranges: List<Pair<String, IntRange>>, contentPercent: 
         val endY = (idx + 1) * barHeight + padding
         val startY = idx * barHeight + padding
         val currY = startY + (endY - startY) / 2
-        g2d.drawString(label, start + 5, currY - 5)
+
+        g2d.color = Color.gray
+        g2d.font = rangeValuesFont
+        val startLabelWidth = g2d.fontMetrics.stringWidth("${range.first}")
+        g2d.drawString("${range.first}", start - 5 - startLabelWidth, currY + g2d.fontMetrics.height / 4)
+        g2d.drawString("${range.last}", end + 5, currY + g2d.fontMetrics.height / 4)
+
+        g2d.color = Color.black
+        g2d.font = standardFont
+        g2d.drawString(label, start + 5, currY - 10)
         g2d.drawLine(start, currY - 5, start, currY + 5)
         g2d.drawLine(start, currY, end, currY)
         g2d.drawLine(end, currY - 5, end, currY + 5)
@@ -60,6 +71,13 @@ fun rangePlot(width: Int, ranges: List<Pair<String, IntRange>>, contentPercent: 
 }
 
 fun main() {
-    val image = rangePlot(800, listOf("Collection A" to 100 .. 200, "Collection B" to  150 .. 200, "Collection C" to 120 .. 180))
+    val image = rangePlot(800, listOf(
+        "JHashSet" to 5892 .. 5902,
+        "JLinkedSet" to  8049 .. 8068,
+        "JTreeSet" to 7684 .. 7716,
+        "SHashSet" to 9470 .. 9485,
+        "SLinkedSet" to 8249 .. 8270,
+        "STreeSet" to 7607 .. 7620
+    ))
     ImageIO.write(image, "png", File("test.png"))
 }
