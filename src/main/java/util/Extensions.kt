@@ -22,8 +22,20 @@ fun String.substringFromNthBig(n: Int): String {
     return this.substring(bigLettersIndices[n])
 }
 
-
 fun String.substringUntilNthBig(n: Int): String {
     val bigLettersIndices = this.mapIndexed{idx, c -> idx to c}.filter { it.second.isUpperCase() }.map {it.first}
     return this.substring(0, bigLettersIndices[n])
+}
+
+fun String.splitByBig(): List<String> {
+    val bigLettersIndices = this.mapIndexed{idx, c -> idx to c}.filter { it.second.isUpperCase() || it.second.isDigit() }.map {it.first}
+    return (1 until bigLettersIndices.size + 1).map {
+        val max = if (it < bigLettersIndices.size) bigLettersIndices[it] else this.length
+        this.substring(bigLettersIndices[it - 1], max)
+    }
+}
+
+fun String.normalizeProfile(): String {
+    val numberIndex = this.mapIndexed { idx, c -> idx to c }.first { it.second.isDigit() }.first
+    return "${this.substring(0, numberIndex - 1)} ${this.substring(numberIndex, this.length).toInt() + 1}"
 }

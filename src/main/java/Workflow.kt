@@ -3,6 +3,7 @@ import model.AnalysisPostfix
 import operations.OutcomesPlotter
 import operations.OutcomesProcessor
 import operations.OutcomesTransformation
+import plot.rangePlot
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -31,6 +32,18 @@ fun main() {
                 FileOperations.writeDataColumnsToCSV(finalOutcomesDestPath.add("profilesDifferences"), profilesDifferences, "profilesDifferences")
                 val allProfilesSummary = OutcomesTransformation.createSingleProfilesSummaryConfIntervals(performanceDataColumnsMap)
                 FileOperations.writeDataColumnsToCSV(finalOutcomesDestPath.add("summaryProfiles"), allProfilesSummary, "summaryProfiles")
+//                val allProfilesSummaryTransformed = allProfilesSummary.map { profileSummary ->
+//                    profileSummary.value.filter { it.header != "Kolekcja" }.mapIndexed { idx, it ->
+//                        val mainKey = "${profileSummary.key.splitByBig().joinToString(" ")}, ${ profileSummary.value.first { it.header == "Kolekcja" }.rows[idx] } - ${it.header.normalizeProfile()}"
+//                        mainKey to it.rows.map {
+//                            val pairString = it.toString().substringAfter("(")
+//                                .substringBefore(")")
+//                                .split(",").map{ it.trim() }
+//                            pairString[0].toInt() .. pairString[1].toInt()
+//                        }
+//                    }
+//                }.flatten()
+//                rangePlot(800, allProfilesSummaryTransformed)
                 val allOperationsSummary = OutcomesTransformation.createSingleMeasurementTable(performanceDataColumnsMap)
                 FileOperations.writeDataColumnsToCSV(finalOutcomesDestPath.add("summaryOperations"), allOperationsSummary, "summaryOperation")
                 val measurementTables = performanceDataColumnsMap.map { it.key to OutcomesTransformation.createPolyaMeasurementTable(it.value) }.toMap()
@@ -51,8 +64,8 @@ fun main() {
 //            val profileEndIndex = it.key.substring(1).indexOfFirst { ('A'..'Z').contains(it)} + 1
 //            val analysisPhase = analysisPostfix.name.lowercase().replaceFirstChar { it.uppercase() }
             val chart = OutcomesPlotter.createBoxChart(it.key, it.value)
-            OutcomesPlotter.plotBoxChart(chart)
-            OutcomesPlotter.saveBoxChart(chart, finalChartsDestPath.add(it.key))
+            OutcomesPlotter.plotBoxChart(chart, finalChartsDestPath.add("${it.key}.png"))
+//            OutcomesPlotter.saveBoxChart(chart, finalChartsDestPath.add(it.key))
         }
     } catch (ex: IllegalArgumentException) {
         ex.printStackTrace()
