@@ -30,9 +30,13 @@ object OutcomesPlotter {
         return chart
     }
 
+    var isFirst = true
+
     fun plotBoxChart(chart: BoxChart, destPath: Path) {
         val chartFrame = SwingWrapper(chart).displayChart()
         val location = chartFrame.locationOnScreen
+        Thread.sleep(if (isFirst) 1000 else 500)
+        isFirst = false
         val image = Robot().createScreenCapture(Rectangle(location.x + 10, location.y + 32, chartFrame.width - 20, chartFrame.height - 40))
         ImageIO.write(image, "PNG", File(destPath.toString()))
     }
