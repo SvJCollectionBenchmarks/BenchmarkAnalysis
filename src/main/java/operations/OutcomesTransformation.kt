@@ -151,7 +151,7 @@ object OutcomesTransformation {
         return groupedDifferenceData.associate { it.first to AnyDataColumn.convertRowsToDataColumns(it.second) }
     }
 
-    fun calculateConfidenceInterval(data: Collection<Double>, level: Double = 0.95): ConfidenceInterval {
+    private fun calculateConfidenceInterval(data: Collection<Double>, level: Double = 0.95): ConfidenceInterval {
         val stats = SummaryStatistics()
         data.forEach { stats.addValue(it) }
         val tDist = TDistribution((stats.n - 1).toDouble())
@@ -159,7 +159,7 @@ object OutcomesTransformation {
         val ciSpan = critVal * stats.standardDeviation / Math.sqrt(stats.n.toDouble())
         val lower = stats.mean - ciSpan
         val upper = stats.mean + ciSpan
-        return ConfidenceInterval(lower, upper, level)
+        return ConfidenceInterval(lower.roundToN(1), upper.roundToN(1), level)
     }
 
 }

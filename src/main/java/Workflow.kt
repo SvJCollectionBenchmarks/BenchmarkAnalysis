@@ -48,10 +48,10 @@ fun main() {
                 FileOperations.writeDataColumnsToCSV(finalOutcomesDestPath.add("summaryTables"), measurementTables, "summaryTable")
             }
         }
-        performanceDataColumnsMap.forEach {
-            val chart = OutcomesPlotter.createBoxChart(it.key, it.value)
-            OutcomesPlotter.plotBoxChart(chart, finalChartsDestPath.add("${it.key}.png"))
-        }
+//        performanceDataColumnsMap.forEach {
+//            val chart = OutcomesPlotter.createBoxChart(it.key, it.value)
+//            OutcomesPlotter.plotBoxChart(chart, finalChartsDestPath.add("${it.key}.png"))
+//        }
     } catch (ex: IllegalArgumentException) {
         ex.printStackTrace()
     }
